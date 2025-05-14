@@ -1,0 +1,197 @@
+/* 
+ * Main CSS styles with Bootstrap integration
+ * For Note Management Application
+ */
+
+ :root {
+    /* Light theme variables */
+    --bs-primary: #4a89dc;
+    --bs-primary-rgb: 74, 137, 220;
+    --bs-success: #2ecc71;
+    --bs-danger: #e74c3c;
+    --bs-warning: #f1c40f;
+    --bs-info: #3498db;
+    
+    /* Custom colors for note labels */
+    --label-bg: #f0f5ff;
+    --label-color: #4a89dc;
+}
+
+/* Dark theme */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #121212;
+    --bs-body-color: #e0e0e0;
+    --bs-border-color: #2d2d2d;
+    
+    /* Custom colors for dark theme */
+    --label-bg: #2d4064;
+    --label-color: #9ec3ff;
+}
+
+/* Animation for autosave indicator */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Global Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Custom utility classes */
+.border-dashed {
+    border-style: dashed !important;
+}
+
+.gap-0 { gap: 0 !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-3 { gap: 1rem !important; }
+.gap-4 { gap: 1.5rem !important; }
+.gap-5 { gap: 3rem !important; }
+
+/* Notifications banner for unverified accounts */
+.notification-banner {
+    background-color: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text);
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Note card enhancements */
+.note-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.note-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.note-card.border-primary {
+    border-width: 2px !important;
+}
+
+.note-content {
+    max-height: 150px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+}
+
+/* Label styling */
+.badge.bg-light {
+    background-color: var(--label-bg) !important;
+    color: var(--label-color) !important;
+}
+
+/* Pin icon in pinned state */
+.fa-thumbtack.text-primary {
+    transform: rotate(45deg);
+}
+
+/* Profile avatar placeholder */
+.avatar-placeholder {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Auto-save indicator animation */
+.save-indicator.saving i {
+    animation: pulse 1s infinite;
+}
+
+/* Responsive media queries */
+@media (max-width: 767.98px) {
+    .card-title {
+        font-size: 1.25rem;
+    }
+    
+    .table-responsive {
+        border: 0;
+    }
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: #444;
+}
+
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Toast enhancements */
+.toast {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease;
+}
+
+/* Login and Register form enhancements */
+.auth-card {
+    max-width: 450px;
+    margin: 0 auto;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+.auth-form .form-floating {
+    margin-bottom: 1rem;
+}
+
+/* Navbar brand logo with animation */
+.navbar-brand i {
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover i {
+    transform: rotate(15deg);
+}
+
+/* Utility to hide elements visually but keep them accessible */
+.visually-hidden:not(:focus):not(:active) {
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}

@@ -2,7 +2,7 @@
 RewriteEngine On
 
 # Set base directory
-RewriteBase /
+RewriteBase /note_app/
 
 # Redirect direct PHP file access to clean URLs
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /([^.]+)\.php [NC]

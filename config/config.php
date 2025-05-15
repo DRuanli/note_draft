@@ -2,10 +2,19 @@
 // Application configuration
 
 // Base URL - automatically detect
-$base_url = isset($_SERVER['HEROKU_APP_NAME']) 
-    ? 'https://' . $_SERVER['HEROKU_APP_NAME'] . '.herokuapp.com' 
-    : 'http://' . $_SERVER['HTTP_HOST'];
+$script_name = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+$base_path = rtrim($script_name, '/');
 
+// Base URL - detect environment with subfolder support
+if (isset($_SERVER['HEROKU_APP_NAME'])) {
+    // Heroku environment
+    $base_url = 'https://' . $_SERVER['HEROKU_APP_NAME'] . '.herokuapp.com';
+} else {
+    // Local environment with subfolder
+    $script_name = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+    $base_path = rtrim($script_name, '/');
+    $base_url = 'http://' . $_SERVER['HTTP_HOST'] . $base_path;
+}
 // App settings
 define('APP_NAME', 'Note Management App');
 define('APP_VERSION', '1.0.0');

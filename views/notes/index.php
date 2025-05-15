@@ -665,6 +665,7 @@
     border-radius: 0 0 15px 15px;
     transition: var(--transition);
     transform-origin: top center;
+    z-index: 10; /* Ensure pin is above the image */
 }
 
 .notes-grid .note-card:hover .pin-badge {
@@ -676,6 +677,7 @@
     height: 180px;
     overflow: hidden;
     position: relative;
+    z-index: 5; /* Below the pin badge */
 }
 
 .note-thumbnail {
@@ -860,7 +862,7 @@
 }
 
 .note-list-item.table-pinned {
-    background-color: rgba(74, 137, 220, 0.05);
+    background-color: rgba(74, 137, 220, 0.08);
 }
 
 .note-list-item.table-pinned:hover {
@@ -949,6 +951,24 @@
     color: #dc3545;
 }
 
+/* Enhanced styling for pinned notes */
+.note-card.pinned {
+    border-top: 3px solid var(--primary-color) !important;
+    background-color: rgba(74, 137, 220, 0.05);
+    box-shadow: 0 6px 15px rgba(74, 137, 220, 0.15) !important;
+}
+
+.table-pinned {
+    background-color: rgba(74, 137, 220, 0.08) !important;
+}
+
+/* Smooth animation for note wrapper */
+.note-wrapper, .note-list-item {
+    transition: all 0.5s ease-in-out;
+}
+
+
+
 /* Responsive Adjustments */
 @media (max-width: 767px) {
     .search-container {
@@ -1033,7 +1053,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Modified pin/unpin note functionality without animations
+    // Enhanced pin/unpin note functionality without page reload
     const pinButtons = document.querySelectorAll('.pin-note');
     
     if (pinButtons.length > 0) {
@@ -1043,12 +1063,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const noteId = this.getAttribute('data-id');
                 const icon = this.querySelector('i');
-                const noteCard = this.closest('.note-card') || this.closest('.note-list-item');
+                
+                // Determine if we're in grid or list view
+                const isGridView = this.closest('.note-card') !== null;
+                const isList = this.closest('.note-list-item') !== null;
+                
+                // Find the container element to move
+                let noteElement = isGridView ? this.closest('.note-wrapper') : this.closest('.note-list-item');
+                let parentContainer = isGridView ? document.querySelector('.row.row-cols-1') : document.querySelector('.table tbody');
+                
+                if (!noteElement || !parentContainer) {
+                    console.error('Could not find note element or parent container');
+                    return;
+                }
                 
                 // Update button appearance immediately (optimistic UI)
                 const isPinned = icon.classList.contains('text-primary');
                 
-                // Update icon state without animation
+                // Update icon state
                 if (isPinned) {
                     icon.classList.remove('text-primary');
                 } else {
@@ -1061,23 +1093,90 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.innerHTML = `<i class="fas fa-thumbtack ${!isPinned ? 'text-primary' : ''}"></i> ${isPinned ? 'Pin' : 'Unpin'}`;
                 }
                 
-                // Update note card styling for grid view
-                if (noteCard && noteCard.classList.contains('note-card')) {
+                // Apply visual changes to note card/row
+                // Apply visual changes to note card/row
+                if (isGridView) {
+                    // Handle grid view note card
+                    const noteCard = this.closest('.note-card');
+                    if (noteCard) {
+                        if (isPinned) {
+                            // When unpinning, remove pinned class
+                            noteCard.classList.remove('pinned');
+                            
+                            // Find and remove the pin badge element
+                            const pinBadge = noteCard.querySelector('.pin-badge');
+                            if (pinBadge) {
+                                pinBadge.remove();
+                            }
+                            
+                            // Add slight animation to emphasize unpinning
+                            noteCard.style.transform = 'translateY(5px)';
+                            setTimeout(() => {
+                                noteCard.style.transform = '';
+                            }, 300);
+                        } else {
+                            // When pinning, add pinned class
+                            noteCard.classList.add('pinned');
+                            
+                            // Create and add pin badge if it doesn't exist
+                            if (!noteCard.querySelector('.pin-badge')) {
+                                const pinBadge = document.createElement('div');
+                                pinBadge.className = 'pin-badge';
+                                pinBadge.innerHTML = '<i class="fas fa-thumbtack"></i>';
+                                noteCard.prepend(pinBadge);
+                            }
+                            
+                            // Add slight animation to emphasize pinning
+                            noteCard.style.transform = 'translateY(-5px)';
+                            setTimeout(() => {
+                                noteCard.style.transform = '';
+                            }, 300);
+                        }
+                    }
+                } else if (isList) {
+                    // Handle list view row
                     if (isPinned) {
-                        noteCard.classList.remove('pinned');
+                        noteElement.classList.remove('table-pinned');
                     } else {
-                        noteCard.classList.add('pinned');
+                        noteElement.classList.add('table-pinned');
                     }
                 }
                 
-                // Update row styling for list view
-                if (noteCard && noteCard.classList.contains('note-list-item')) {
-                    if (isPinned) {
-                        noteCard.classList.remove('table-pinned');
-                    } else {
-                        noteCard.classList.add('table-pinned');
-                    }
+                // Move the note element in the DOM
+                if (!isPinned) {
+                    // Pin: Move to top
+                    parentContainer.insertBefore(noteElement, parentContainer.firstChild);
+                } else {
+                    // Unpin: Move to bottom
+                    parentContainer.appendChild(noteElement);
                 }
+                
+                // Add an indicator that something changed
+                const indicator = document.createElement('div');
+                indicator.className = 'position-fixed top-0 end-0 p-3';
+                indicator.style.zIndex = '9999';
+                indicator.innerHTML = `
+                    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="toast-header">
+                            <strong class="me-auto">${!isPinned ? 'Note Pinned' : 'Note Unpinned'}</strong>
+                            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                        <div class="toast-body">
+                            Note has been ${!isPinned ? 'pinned to the top' : 'unpinned'}.
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(indicator);
+                
+                // Remove the indicator after 3 seconds
+                setTimeout(() => {
+                    indicator.style.opacity = '0';
+                    setTimeout(() => {
+                        if (indicator.parentNode) {
+                            indicator.parentNode.removeChild(indicator);
+                        }
+                    }, 300);
+                }, 3000);
                 
                 // Send AJAX request
                 fetch(BASE_URL + '/notes/toggle-pin/' + noteId, {
@@ -1089,6 +1188,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (!data.success) {
+                        // Handle failure cases
                         if (data.redirect) {
                             // Redirect to password verification if needed
                             window.location.href = data.redirect;
@@ -1101,23 +1201,26 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                             
                             // Revert note card/row styling
-                            if (noteCard && noteCard.classList.contains('note-card')) {
+                            if (isGridView) {
+                                const noteCard = this.closest('.note-card');
+                                if (noteCard) {
+                                    if (isPinned) {
+                                        noteCard.classList.add('pinned');
+                                    } else {
+                                        noteCard.classList.remove('pinned');
+                                    }
+                                }
+                            } else if (isList) {
                                 if (isPinned) {
-                                    noteCard.classList.add('pinned');
+                                    noteElement.classList.add('table-pinned');
                                 } else {
-                                    noteCard.classList.remove('pinned');
+                                    noteElement.classList.remove('table-pinned');
                                 }
                             }
                             
-                            if (noteCard && noteCard.classList.contains('note-list-item')) {
-                                if (isPinned) {
-                                    noteCard.classList.add('table-pinned');
-                                } else {
-                                    noteCard.classList.remove('table-pinned');
-                                }
-                            }
-                            
+                            // Alert the user
                             console.error('Error:', data.message);
+                            alert('Failed to update note: ' + data.message);
                         }
                     }
                 })
@@ -1131,22 +1234,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         icon.classList.remove('text-primary');
                     }
                     
-                    // Revert note card/row styling
-                    if (noteCard && noteCard.classList.contains('note-card')) {
-                        if (isPinned) {
-                            noteCard.classList.add('pinned');
-                        } else {
-                            noteCard.classList.remove('pinned');
-                        }
+                    // Revert DOM position
+                    if (!isPinned) {
+                        parentContainer.appendChild(noteElement);
+                    } else {
+                        parentContainer.insertBefore(noteElement, parentContainer.firstChild);
                     }
                     
-                    if (noteCard && noteCard.classList.contains('note-list-item')) {
-                        if (isPinned) {
-                            noteCard.classList.add('table-pinned');
-                        } else {
-                            noteCard.classList.remove('table-pinned');
-                        }
-                    }
+                    // Alert the user
+                    alert('Network error, please try again');
                 });
             });
         });
@@ -1174,8 +1270,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h3>Delete Note?</h3>
                     <p>This action cannot be undone.</p>
                     <div class="delete-dialog-buttons">
-                        <button class="btn btn-outline-secondary cancel-delete">Cancel</button>
-                        <button class="btn btn-danger confirm-delete">Delete</button>
+                        <button type="button" class="btn btn-outline-secondary cancel-delete">Cancel</button>
+                        <button type="button" class="btn btn-danger confirm-delete">Delete</button>
                     </div>
                 `;
                 
@@ -1210,9 +1306,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add CSS for delete dialog
+    // Additional CSS for enhanced delete dialog
     const styleSheet = document.createElement('style');
-    styleSheet.innerHTML = `
+    styleSheet.innerHTML += `
         .delete-dialog-overlay {
             position: fixed;
             top: 0;
@@ -1287,5 +1383,20 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(styleSheet);
+    
+    // Additional CSS fix for ensuring correct layering in grid view
+    const noteCards = document.querySelectorAll('.note-card');
+    noteCards.forEach(card => {
+        // Add position relative if not already set
+        if (getComputedStyle(card).position === 'static') {
+            card.style.position = 'relative';
+        }
+        
+        // Ensure correct z-index for thumbnails
+        const thumbnail = card.querySelector('.note-thumbnail-container');
+        if (thumbnail) {
+            thumbnail.style.zIndex = '5';
+        }
+    });
 });
 </script>

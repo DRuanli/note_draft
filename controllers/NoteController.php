@@ -423,6 +423,101 @@ class NoteController {
             include VIEWS_PATH . '/components/footer.php';
         }
     }
+
+    /**
+     * Delete an image attached to a note
+     */
+    public function deleteImage($id) {
+        $user_id = Session::getUserId();
+        
+        // First get the image to check ownership
+        $db = getDB();
+        $stmt = $db->prepare("
+            SELECT i.*, n.user_id as note_user_id, n.id as note_id 
+            FROM images i
+            JOIN notes n ON i.note_id = n.id
+            WHERE i.id = ?
+        ");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows === 0) {
+            // Image not found
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Image not found'
+                ]);
+                exit;
+            } else {
+                Session::setFlash('error', 'Image not found');
+                header('Location: ' . BASE_URL . '/notes');
+                exit;
+            }
+        }
+        
+        $image = $result->fetch_assoc();
+        
+        // Check if the user owns the note or has edit permission
+        if ($image['note_user_id'] != $user_id && !$this->sharedNote->canEditSharedNote($image['note_id'], $user_id)) {
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Access denied'
+                ]);
+                exit;
+            } else {
+                Session::setFlash('error', 'Access denied');
+                header('Location: ' . BASE_URL . '/notes');
+                exit;
+            }
+        }
+        
+        // Check if the note is password protected
+        $note = $this->note->getById($image['note_id']);
+        if ($note && isset($note['is_password_protected']) && $note['is_password_protected']) {
+            // Verify the user has already entered the password
+            $verified_notes = Session::get('verified_notes', []);
+            if (!in_array($image['note_id'], $verified_notes)) {
+                if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                    header('Content-Type: application/json');
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Password verification required',
+                        'redirect' => BASE_URL . '/notes/verify-password/' . $image['note_id'] . '?redirect=edit'
+                    ]);
+                    exit;
+                } else {
+                    header('Location: ' . BASE_URL . '/notes/verify-password/' . $image['note_id'] . '?redirect=edit');
+                    exit;
+                }
+            }
+        }
+        
+        // Delete the image
+        $result = $this->note->deleteImage($id);
+        
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            // AJAX request
+            header('Content-Type: application/json');
+            echo json_encode($result);
+            exit;
+        } else {
+            // Regular form submission
+            if ($result['success']) {
+                Session::setFlash('success', 'Image deleted successfully');
+            } else {
+                Session::setFlash('error', $result['message']);
+            }
+            
+            // Redirect back to the note edit page
+            header('Location: ' . BASE_URL . '/notes/edit/' . $note['id']);
+            exit;
+        }
+    }
     
     // Delete note with confirmation
     public function delete($id) {

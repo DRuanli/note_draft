@@ -64,18 +64,17 @@ $is_new = !isset($data['note']['id']);
                         
                         <div class="editor-actions d-flex flex-wrap gap-2">
                             <?php if (isset($data['note']['id']) && !$is_shared): ?>
-                                <div class="btn-group me-2">
-                                    <a href="<?= BASE_URL ?>/notes/share/<?= $data['note']['id'] ?>" class="btn btn-outline-info rounded-pill">
-                                        <i class="fas fa-share-alt me-2"></i>Share
-                                    </a>
-                                    <a href="<?= BASE_URL ?>/notes/toggle-password/<?= $data['note']['id'] ?>" class="btn btn-outline-warning rounded-pill">
-                                        <?php if (isset($data['note']['is_password_protected']) && $data['note']['is_password_protected']): ?>
-                                            <i class="fas fa-unlock me-2"></i>Remove Password
-                                        <?php else: ?>
-                                            <i class="fas fa-lock me-2"></i>Add Password
-                                        <?php endif; ?>
-                                    </a>
-                                </div>
+                                <!-- Removed the btn-group container and separated the buttons -->
+                                <a href="<?= BASE_URL ?>/notes/share/<?= $data['note']['id'] ?>" class="btn btn-outline-info rounded-pill me-2">
+                                    <i class="fas fa-share-alt me-2"></i>Share
+                                </a>
+                                <a href="<?= BASE_URL ?>/notes/toggle-password/<?= $data['note']['id'] ?>" class="btn btn-outline-warning rounded-pill me-2">
+                                    <?php if (isset($data['note']['is_password_protected']) && $data['note']['is_password_protected']): ?>
+                                        <i class="fas fa-unlock me-2"></i>Remove Password
+                                    <?php else: ?>
+                                        <i class="fas fa-lock me-2"></i>Add Password
+                                    <?php endif; ?>
+                                </a>
                             <?php endif; ?>
                             <a href="<?= BASE_URL ?>/notes" class="btn btn-outline-secondary rounded-pill">
                                 <i class="fas fa-times me-2"></i>Cancel

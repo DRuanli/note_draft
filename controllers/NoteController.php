@@ -745,6 +745,7 @@ class NoteController {
         include VIEWS_PATH . '/notes/password-protection.php';
         include VIEWS_PATH . '/components/footer.php';
     }
+    
 
     // Verify password for a protected note
     public function verifyPassword($id) {

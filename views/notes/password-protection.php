@@ -596,7 +596,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const submitBtn = form.querySelector('button[type="submit"]');
                 if (submitBtn) {
                     const originalText = submitBtn.innerHTML;
-                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
+                    submitBtn.innerHTML = '<span class="role="status" aria-hidden="true"></span> Processing...';
                     submitBtn.disabled = true;
                     
                     // Store original text for potential recovery

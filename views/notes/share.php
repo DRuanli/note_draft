@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show loading indicator
             const submitBtn = shareForm.querySelector('button[type="submit"]');
             if (submitBtn) {
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sharing...';
+                submitBtn.innerHTML = '<role="status" aria-hidden="true"></span> Sharing...';
                 submitBtn.disabled = true;
             }
         });

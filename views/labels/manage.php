@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Disable submit button to prevent double submission
             submitButton.disabled = true;
             btnText.innerHTML = formAction.value === 'create' ? 'Creating...' : 'Updating...';
-            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> ' + btnText.innerHTML;
+            submitButton.innerHTML = '<role="status" aria-hidden="true"></span> ' + btnText.innerHTML;
             
             // Prepare form data
             const formData = new FormData(labelForm);

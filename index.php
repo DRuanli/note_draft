@@ -207,6 +207,10 @@ switch ($page) {
                 $id = isset(explode('/', $url)[2]) ? explode('/', $url)[2] : null;
                 $controller->togglePasswordProtection($id);
                 break;
+            case 'change-note-password':
+                $id = isset(explode('/', $url)[2]) ? explode('/', $url)[2] : null;
+                $controller->changeNotePassword($id);
+                break;
             case 'verify-password':
                 $id = isset(explode('/', $url)[2]) ? explode('/', $url)[2] : null;
                 $controller->verifyPassword($id);

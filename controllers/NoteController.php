@@ -424,6 +424,75 @@ class NoteController {
         }
     }
 
+    public function changeNotePassword($id) {
+        $user_id = Session::getUserId();
+        
+        // Get note
+        $note = $this->note->getById($id);
+        
+        // Check if note exists, belongs to the user, and is password protected
+        if (!$note || $note['user_id'] != $user_id) {
+            Session::setFlash('error', 'Note not found or access denied');
+            header('Location: ' . BASE_URL . '/notes');
+            exit;
+        }
+        
+        // Check if note is actually password protected
+        if (!$note['is_password_protected']) {
+            Session::setFlash('error', 'This note is not password protected');
+            header('Location: ' . BASE_URL . '/notes/edit/' . $id);
+            exit;
+        }
+        
+        $data = [
+            'pageTitle' => 'Change Password',
+            'pageStyles' => ['notes'],
+            'note' => $note,
+            'errors' => []
+        ];
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $current_password = $_POST['current_password'] ?? '';
+            $new_password = $_POST['new_password'] ?? '';
+            $confirm_password = $_POST['confirm_password'] ?? '';
+            
+            // Validate input
+            if (empty($current_password)) {
+                $data['errors']['current_password'] = 'Current password is required';
+            } elseif (!$this->note->verifyNotePassword($id, $current_password)) {
+                $data['errors']['current_password'] = 'Incorrect password';
+            }
+            
+            if (empty($new_password)) {
+                $data['errors']['new_password'] = 'New password is required';
+            } elseif (strlen($new_password) < 4) {
+                $data['errors']['new_password'] = 'Password must be at least 4 characters';
+            }
+            
+            if ($new_password !== $confirm_password) {
+                $data['errors']['confirm_password'] = 'Passwords do not match';
+            }
+            
+            if (empty($data['errors'])) {
+                // Change the password
+                $result = $this->note->changeNotePassword($id, $new_password);
+                
+                if ($result['success']) {
+                    Session::setFlash('success', 'Password changed successfully');
+                    header('Location: ' . BASE_URL . '/notes/edit/' . $id);
+                    exit;
+                } else {
+                    $data['errors']['general'] = 'Failed to change password: ' . $result['message'];
+                }
+            }
+        }
+        
+        // Load view
+        include VIEWS_PATH . '/components/header.php';
+        include VIEWS_PATH . '/notes/change-password.php';
+        include VIEWS_PATH . '/components/footer.php';
+    }
+
     /**
      * Delete an image attached to a note
      */
